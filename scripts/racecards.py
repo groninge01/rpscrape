@@ -5,18 +5,18 @@ import datetime
 import os
 import re
 import sys
+import tomli
 
 from collections import defaultdict
+from dotenv import load_dotenv
 from lxml import etree, html
 from pathlib import Path
+from orjson import dumps
 from tqdm import tqdm
 from typing import Any
-from orjson import dumps
-import tomli
 
 from utils.cleaning import clean_string
 from utils.course import valid_meeting
-from utils.header import RandomHeader
 from utils.going import get_surface
 from utils.lxml_funcs import find
 from utils.network import NetworkClient
@@ -26,7 +26,7 @@ from utils.stats import Stats
 
 from models.racecard import Racecard, Runner
 
-random_header = RandomHeader()
+_ = load_dotenv()
 
 MAX_DAYS = 2
 
@@ -395,7 +395,6 @@ def scrape_racecards(
             print(f'status: {status_runners} url: {url_runners}')
             continue
 
-        # Optional stats request
         status_accordion = None
         resp_accordion = None
         if fetch_stats:
@@ -532,7 +531,11 @@ def main() -> None:
         print(f'Invalid region: {args.region}')
         sys.exit(1)
 
-    client = NetworkClient()
+    email = os.getenv('EMAIL')
+    auth_state = os.getenv('AUTH_STATE')
+    access_token = os.getenv('ACCESS_TOKEN')
+
+    client = NetworkClient(email=email, auth_state=auth_state, access_token=access_token)
 
     race_urls = get_race_urls(client, dates, region)
 
